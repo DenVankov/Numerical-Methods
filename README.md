@@ -1,2 +1,1 @@
-# ivankovden99-gmail.com
-Numerical-Methods
+# Numerical-Methods
