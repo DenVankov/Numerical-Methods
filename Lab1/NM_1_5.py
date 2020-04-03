@@ -1,7 +1,12 @@
-import tools
-from math import sqrt
+import sys
+
 import numpy as np
-import pprint
+from numpy.linalg import norm
+
+from matrix import Matrix, Vector
+from numpy.linalg import eig
+
+eps = 0.01
 
 
 def sign(x):
@@ -13,126 +18,116 @@ def sign(x):
         return 0
 
 
-def QR_decomp(A):
-    n = len(A)
-    Ak = [rows.copy() for rows in A]
-
-    E = tools.diagonal(n)
-    Q = tools.diagonal(n)
-
-    for i in range(n):
-        V = [0 for _ in range(n)]
-
-        V[i] = Ak[i][i] + sign(A[i][i]) * sqrt(sum([Ak[j][i] ** 2 for j in range(i, n)]))
-
-        for j in range(i + 1, n):
-            V[j] = Ak[j][i]
-
-        V_trans = [V]
-
-        V = [[V[i]] for i in range(n)]
-
-        L = tools.mm_mult(V,V_trans) # Matrix nxn
-        R = tools.mm_mult(V_trans,V) # After multi it become a const
-
-        for j in range(n):
-            for k in range(n):
-                L[j][k] /= R[0][0]
-                L[j][k] *= 2
-        Hk = tools.mm_substr(E, L)
-        Ak = tools.mm_mult(Hk, Ak)
-        Q = tools.mm_mult(Q, Hk)
-
-    return Q,Ak
+def matrix_print(matrix, header=None):
+    if header:
+        print(header, '\n')
+    for i in range(len(matrix)):
+        for j in range(len(matrix[i])):
+            print('{:6.2f}'.format(float(matrix[i][j])), end=' ')
+        print()
+    print()
 
 
-def normal(x):
-    return sum(k**2 for k in x) ** 0.5
+def get_ans(matrix, my_values):
+    print("Answer:")
+    print(my_values)
+
+    a = np.array(matrix.get_data())
+    eig_np = eig(a)
+    print("Answer with numpy:")
+    print(eig_np[0].round(3))
 
 
-def columns(A, i):
-    return [A[j][i] for j in range(i+1, len(A))]
+def householder(a, sz, k):
+    v = np.zeros(sz)
+    a = np.array(a.get_data())
+    v[k] = a[k] + sign(a[k]) * norm(a[k:])
+    for i in range(k + 1, sz):
+        v[i] = a[i]
+    v = v[:, np.newaxis]
+    H = np.eye(sz) - (2 / (v.T @ v)) * (v @ v.T)
+    return Matrix.from_list(H.tolist())
 
 
-def small(A, eps = 0.01):
-    n = len(A)
-    array = []
+def get_QR(A):
+    sz = len(A)
+    Q = Matrix.identity(sz)
+    A_i = Matrix(A)
 
+    for i in range(sz - 1):
+        col = A_i.get_column(i)
+        H = householder(col, len(A_i), i)
+        Q = Q.multiply(H)
+        A_i = H.multiply(A_i)
+
+    return Q, A_i
+
+
+def get_roots(A, i):
+    sz = len(A)
+    a11 = A[i][i]
+    a12 = A[i][i + 1] if i + 1 < sz else 0
+    a21 = A[i + 1][i] if i + 1 < sz else 0
+    a22 = A[i + 1][i + 1] if i + 1 < sz else 0
+    return np.roots((1, -a11 - a22, a11 * a22 - a12 * a21))
+
+
+def finish_iter_for_complex(A, eps, i):
+    Q, R = get_QR(A)
+    A_next = R.multiply(Q)
+    lambda1 = get_roots(A, i)
+    lambda2 = get_roots(A_next, i)
+    return True if abs(lambda1[0] - lambda2[0]) <= eps and \
+                   abs(lambda1[1] - lambda2[1]) <= eps else False
+
+
+def get_eigenvalue(A, eps, i):
+    A_i = Matrix(A)
+    while True:
+        Q, R = get_QR(A_i)
+        A_i = R.multiply(Q)
+        a = np.array(A_i.get_data())
+        if norm(a[i + 1:, i]) <= eps:
+            res = (a[i][i], False, A_i)
+            break
+        elif norm(a[i + 2:, i]) <= eps and finish_iter_for_complex(A_i, eps, i):
+            res = (get_roots(A_i, i), True, A_i)
+            break
+    return res
+
+
+def QR_method(A, eps):
+    res = Vector()
     i = 0
-    while i < n:
-        if normal(columns(A, i)) <= eps:
-            array.append('R')
-        elif normal(columns(A, i + 1)) <= eps:
-            array.append('I')
+    A_i = Matrix(A)
+    while i < len(A):
+        eigenval = get_eigenvalue(A_i, eps, i)
+        if eigenval[1]:
+            res.extend(eigenval[0])
+            i += 2
+        else:
+            res.append(eigenval[0])
             i += 1
-        else:
-            array.append(None)
-        i += 1
-    return array
+        A_i = eigenval[2]
+    return res, i
 
 
-def solve(A, array):
-    n = len(A)
-    solution = []
-    Ak = np.array(A)
-    k = 0
-    for piece in array:
-        if piece == 'R':
-            solution.append(Ak[k, k])
-        else:
-            A11 = Ak[k, k]
-            A12 = A21 = A22 = 0
+if __name__ == '__main__':
 
-            if k + 1 < n:
-                A12 = Ak[k, k + 1]
-                A21 = Ak[k + 1, k]
-                A22 = Ak[k + 1, k + 1]
+    if len(sys.argv) != 2:
+        print("use {} <matrix_file>")
+        exit(0)
 
-            solution.extend(np.roots((1, -A11 -A22, A11 * A22 - A12 * A21)))
-            k += 1
-        k += 1
-    return solution
+    matrix_file = sys.argv[1]
 
+    data = []
+    with open(matrix_file) as m:
+        for line in m:
+            data.append(list(map(int, line.split())))
 
-def QR_method(A, eps = 0.01):
-    n = len(Q)
-    Ak = [rows.copy() for rows in A]
+    A = Matrix()
+    A.data = data
+    matrix_print(A, header='A')
+    tmp, count_iter = QR_method(A, eps)
 
-    stop = True
-
-    for i in range(100):
-        Qk, Rk = QR_decomp(Ak)
-        Ak = tools.mm_mult(Rk, Qk)
-        tools.matrix_print(Ak, header=f"A on {i} iteration")
-
-        array = small(Ak, eps)
-        if all(array):
-            if stop:
-                stop = False
-            else:
-                return solve(Ak, array)
-
-    return None
-
-
-if (__name__ == '__main__'):
-    print("Input demention of matrix: ")
-    n = int(input())
-    A = []
-    print("Input matrix: ")
-    for i in range(n):
-        A.append(list(map(float, input().split())))
-
-    print("Input eps:")
-    eps = float(input())
-
-    print("Start:")
-    tools.matrix_print(A, header= "A")
-    Q, R = QR_decomp(A)
-    tools.matrix_print(Q, header="Q")
-    tools.matrix_print(R, header="R")
-    tools.matrix_print(tools.mm_mult(Q, R), header="Again A")
-    print("Solution X: ",QR_method(A, eps))
-    print("With numpy library:", end = '')
-    X, U = np.linalg.eig(A)
-    pprint.pprint(X)
+    get_ans(A, tmp)
