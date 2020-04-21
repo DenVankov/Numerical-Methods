@@ -1,6 +1,5 @@
 import math
 import numpy as np
-import matplotlib
 import matplotlib.pyplot as plt
 
 target = """X* = -0.5

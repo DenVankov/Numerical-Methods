@@ -1,12 +1,10 @@
 import math
 import numpy as np
-import matplotlib
 import matplotlib.pyplot as plt
-
 
 # y = exp(x)
 # xi = [-2, -1, 0, 1]
-# xi = [-2, -1, 0.2, 1]
+# x_vec = [-2, -1, 0.2, 1]
 # x_ = -0.5
 
 def f(x):
@@ -39,6 +37,7 @@ def newton(x):
     n = len(x)
     y = [[f(val) for val in x]]
     k = 1
+    # f(x0)
     N = [[y[0][0]]]
     for i in range(n - 1):
         y.append([])
@@ -119,7 +118,7 @@ if __name__ == '__main__':
     print(f'L({x_check}) = {Lx:6.3f}\n')
 
     print('Newton')
-    N = newton(x_2)
+    N = newton(x_1)
     print("N(x) =", end=' ')
     printer(N)
 
