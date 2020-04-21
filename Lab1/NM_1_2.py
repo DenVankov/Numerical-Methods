@@ -6,7 +6,7 @@ def tdma(matrix, n, d):
     cnt = 0
     for i in range(size):
         for j in range(size):
-            if (i == j):
+            if i == j:
                 b.append(float(matrix[i][j]))
         if (cnt != size - 1):
             c.append(float(matrix[cnt][cnt + 1]))
@@ -30,7 +30,7 @@ def tdma(matrix, n, d):
     # Main cycle
     for i in range(1, size):
         y[i] = b[i] + alpha[i - 1] * a[i - 1]
-        if (i != size -1):
+        if i != size -1:
             alpha[i] = -c[i] / y[i]
         beta[i]  = (d[i] - beta[i - 1] * a[i -1]) / y[i]
 
@@ -41,7 +41,7 @@ def tdma(matrix, n, d):
         x[i] = alpha[i] * x[i + 1] + beta[i]
 
     # Result of equation
-    print("x =",x)
+    print("x =", x)
 
 def show(A, n):
     print("Start matrix")
@@ -60,14 +60,3 @@ if __name__ == '__main__':
 
     show(matrix, n) #Start matrix
     tdma(matrix, n, d) #Start algo
-# 2 -1 0
-# 5 4 2
-# 0 1 -3
-# 3 6 2
-
-# 6 -5 0 0 0
-# -6 16 9 0 0
-# 0 9 17 -3 0
-# 0 0 8 22 -8
-# 0 0 0 6 -13
-# -58 161 -114 -90 -55

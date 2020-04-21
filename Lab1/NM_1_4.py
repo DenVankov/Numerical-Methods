@@ -13,7 +13,7 @@ def show(A, n):
 
 def matrixsum(A, B):
     out = [[0] * len(A[0]) for _ in range(len(A))]
-    if (len(B) != len(A) and len(B[0]) != len(A[0])):
+    if len(B) != len(A) and len(B[0]) != len(A[0]):
         raise MatrixException('Matrix can\'t be compared')
     for i in range(len(A)):
         for j in range(len(A[0])):
@@ -100,7 +100,7 @@ def rotation(A, eps = 0.01):
 
 
 
-if (__name__ == '__main__'):
+if __name__ == '__main__':
     print("Input demention of matrix: ")
     n = int(input())
     A = []
@@ -124,8 +124,3 @@ if (__name__ == '__main__'):
     print('X:\n', X)
     print('U:\n')
     show(U, len(U))
-
-
-    # 9 2 -7
-    # 2 -4 -1
-    # -7 -1 1

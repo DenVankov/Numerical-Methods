@@ -32,7 +32,7 @@ def seidel(A, b, eps):
 
 
         stop = sqrt(sum((x_new[i] - x[i]) ** 2 for i in range(n))) <= eps
-        if (stop == False):
+        if stop == False:
             x = x_new
         count += 1
 
@@ -42,7 +42,7 @@ def seidel(A, b, eps):
 
 def matrixsum(A, B):
     out = [[0] * len(A[0]) for _ in range(len(A))]
-    if (len(B) != len(A) and len(B[0]) != len(A[0])):
+    if len(B) != len(A) and len(B[0]) != len(A[0]):
         raise MatrixException('Matrix can\'t be compared')
     for i in range(len(A)):
         for j in range(len(A[0])):
@@ -105,7 +105,7 @@ def show(A, n):
         print("\n")
 
 
-if (__name__ == '__main__'):
+if __name__ == '__main__':
     print("Input demention of matrix: ")
     n = int(input())
     A = []
@@ -119,8 +119,3 @@ if (__name__ == '__main__'):
     show(A, n)
     #simpleIteration(A, n, b)
     print(seidel(A, b, 0.01))
-    # 3
-    # 10 1 1
-    # 2 10 1
-    # 2 2 10
-    # 12 13 14
