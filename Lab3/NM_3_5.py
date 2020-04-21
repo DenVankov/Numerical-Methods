@@ -40,16 +40,21 @@ def simpson(x, h):
 
 def runge_Romberg(res, true_value):
     k = res[0]['h'] / res[1]['h']
-    err_rec = [res[0]['rec'] + (res[0]['rec'] - res[1]['rec']) / (k ** 2 - 1), abs(res[0]['rec'] - true_value)]
-    err_trp = [res[0]['trp'] + (res[0]['trp'] - res[1]['trp']) / (k ** 2 - 1), abs(res[0]['trp'] - true_value)]
-    err_smp = [res[0]['smp'] + (res[0]['smp'] - res[1]['smp']) / (k ** 4 - 1), abs(res[0]['smp'] - true_value)]
+    err_rec = [res[0]['rec'] + (res[0]['rec'] - res[1]['rec']) / (k ** 2 - 1),
+               abs(res[0]['rec'] - true_value) / (k ** 2 - 1)]
+
+    err_trp = [res[0]['trp'] + (res[0]['trp'] - res[1]['trp']) / (k ** 2 - 1),
+               abs(res[0]['trp'] - true_value) / (k ** 2 - 1)]
+
+    err_smp = [res[0]['smp'] + (res[0]['smp'] - res[1]['smp']) / (k ** 4 - 1),
+               abs(res[0]['smp'] - true_value) / (k ** 4 - 1)]
     return {'rec': err_rec, 'trp': err_trp, 'smp': err_smp}
 
 
 if __name__ == '__main__':
     x0 = -1
     x = 1
-    h = [0.25, 0.5]
+    h = [0.5, 0.25]
     true_value = -0.04133027217305138
     res = []
     for h_i in h:
