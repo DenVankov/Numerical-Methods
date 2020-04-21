@@ -14,11 +14,13 @@ def ddf(x):
 def phi(x):
     return math.log(2 * x + 2)
 
+
 def dphi(x):
     return 2 / (2 * x + 2)
 
-def simpleIteration(phi, dphi, a, b, eps = 0.001):
-    q = min(abs(dphi(a)), abs(dphi(b)))
+
+def simpleIteration(phi, dphi, a, b, eps=0.001):
+    q = max(abs(dphi(a)), abs(dphi(b)))
     x = (a + b) / 2
     k = 0
     go = True
@@ -32,10 +34,11 @@ def simpleIteration(phi, dphi, a, b, eps = 0.001):
             go = False
 
         x = x_cur
-        if (k == 10):
+        if k == 10:
             break
 
-def newton(f, df, x0, eps = 0.001):
+
+def newton(f, df, x0, eps=0.001):
     x = x0
     k = 0
     go = True
@@ -47,6 +50,7 @@ def newton(f, df, x0, eps = 0.001):
             go = False
 
         x = x_cur
+
 
 def show(f, df, x, file = None, step = 0.5, ddf = None):
     X = np.arange(x[0], x[-1], step)
@@ -77,7 +81,7 @@ def show(f, df, x, file = None, step = 0.5, ddf = None):
 if __name__ == '__main__':
     print("My function is: e^x - 2*x - 2")
     print("Simple iteration:")
-    simpleIteration(phi, dphi, 0, 2)
+    simpleIteration(phi, dphi, 1, 2)
     print("Newton method:")
     newton(f, df, 1.1)
     show(f, df, [0, 2], step=0.1, ddf=ddf)

@@ -175,7 +175,7 @@ def simpleIteration(x1, x2, eps = 0.01):
     print("q:", q)
     if q >= 1:
         print("Leave field of G")
-        printer({"q":q})
+        printer({"q": q})
     while True:
         k += 1
         x1_cur, x2_cur = phi1(x2_last), phi2(x1_last)
