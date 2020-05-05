@@ -39,16 +39,16 @@ def simpson(x, h):
 
 
 def runge_Romberg(res, true_value):
-    k = res[0]['h'] / res[1]['h']
-    err_rec = [res[0]['rec'] + (res[0]['rec'] - res[1]['rec']) / (k ** 2 - 1),
-               abs(res[0]['rec'] - true_value) / (k ** 2 - 1)]
+    k = res[1]['h'] / res[0]['h']
+    val_rec = [res[0]['rec'] + (res[0]['rec'] - res[1]['rec']) / (k ** 2 - 1),
+               abs(res[0]['rec'] + (res[0]['rec'] - res[1]['rec']) / (k ** 2 - 1) - true_value)]
 
-    err_trp = [res[0]['trp'] + (res[0]['trp'] - res[1]['trp']) / (k ** 2 - 1),
-               abs(res[0]['trp'] - true_value) / (k ** 2 - 1)]
+    val_trp = [res[0]['trp'] + (res[0]['trp'] - res[1]['trp']) / (k ** 2 - 1),
+               abs(res[0]['trp'] + (res[0]['trp'] - res[1]['trp']) / (k ** 2 - 1) - true_value)]
 
-    err_smp = [res[0]['smp'] + (res[0]['smp'] - res[1]['smp']) / (k ** 4 - 1),
-               abs(res[0]['smp'] - true_value) / (k ** 4 - 1)]
-    return {'rec': err_rec, 'trp': err_trp, 'smp': err_smp}
+    val_smp = [res[0]['smp'] + (res[0]['smp'] - res[1]['smp']) / (k ** 4 - 1),
+               abs(res[0]['smp'] + (res[0]['smp'] - res[1]['smp']) / (k ** 4 - 1) - true_value)]
+    return {'rec': val_rec, 'trp': val_trp, 'smp': val_smp}
 
 
 if __name__ == '__main__':
@@ -58,6 +58,7 @@ if __name__ == '__main__':
     true_value = -0.04133027217305138
     res = []
     for h_i in h:
+        print('Current h =', h_i)
         X = get_x(x0, x, h_i)
         print(f'x = {X}')
         y = get_y(X)
@@ -84,7 +85,7 @@ if __name__ == '__main__':
     err = runge_Romberg(res, true_value)
 
     print('All errors:')
-    print(f'True value: {true_value}')
-    print('Rectangle to rectangle error: {}, rectangle to absolute error: {}'.format(err['rec'][0], err['rec'][1]))
-    print('Trapeze to trapeze error: {}, trapeze to absolute error {}'.format(err['trp'][0], err['trp'][1]))
-    print('Simpson to Simpson error: {}, Simpson to absolute error {}'.format(err['smp'][0], err['smp'][1]))
+    print(f'True value of integral: {true_value}')
+    print('Rectangle specified value: {}, rectangle absolute error: {}'.format(err['rec'][0], err['rec'][1]))
+    print('Trapeze   specified value: {}, trapeze absolute error {}'.format(err['trp'][0], err['trp'][1]))
+    print('Simpson   specified value: {}, Simpson absolute error {}'.format(err['smp'][0], err['smp'][1]))

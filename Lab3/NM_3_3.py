@@ -15,7 +15,7 @@ def func(x, values):
 
 
 def sse(f, y):
-    return sum([f_i - y_i for f_i, y_i in zip(f, y)])
+    return round(sum([(f_i - y_i) ** 2 for f_i, y_i in zip(f, y)]), 5)
 
 
 def mls(n, x, y):
@@ -56,11 +56,17 @@ if __name__ == '__main__':
         coefs.append(mls(degree, x, y))
         print(f_printer(coefs[degree - 1]))
         F.append([func(i, coefs[degree - 1]) for i in x])
-        err.append(sse(F[0], y))
+        err.append(sse(F[degree - 1], y))
 
     plt.scatter(x, y, color='r')
-    plt.plot(x, F[0], color='m')
-    plt.plot(x, F[1], color='g')
+    plt.plot(x, F[0], color='m', label='Function')
+    plt.plot(x, F[1], color='g', label='LessSquareMethod')
+    plt.legend(loc='best')
     plt.grid()
     plt.savefig('3_3.png')
     plt.show()
+
+    k = 1
+    for i in err:
+        print(f'Error of F{k} = {i}')
+        k += 1
