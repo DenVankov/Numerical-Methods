@@ -25,6 +25,10 @@ def g(x, y, k):
     return k
 
 
+def sse(f, y):
+    return round(sum([(f_i - y_i) ** 2 for f_i, y_i in zip(f, y)]), 5)
+
+
 def analytical(f, a, b, h):
     x = [i for i in np.arange(a, b + h, h)]
     y = [f(i) for i in x]
@@ -117,6 +121,7 @@ def show(res, pure, h):
         plt.xlabel('x')
         plt.ylabel('y')
         plt.grid(True)
+    plt.savefig('Methods.png')
     plt.show()
 
 
@@ -161,7 +166,10 @@ if __name__ == '__main__':
 
     err = rungeRobert(res)
     print("Euler error: {0}".format(err['Euler']))
+    print("SSE of Euler {}".format(sse(err['Euler'], [(x - y) for x, y in zip(pure[0][1], pure[1][1])])))
     print("Runge error: {0}".format(err['Runge']))
+    print("SSE of Runge {}".format(sse(err['Runge'], [(x - y) for x, y in zip(pure[0][1], pure[1][1])])))
     print("Adams error: {0}".format(err['Adams']))
+    print("SSE of Adams {}".format(sse(err['Adams'], [(x - y) for x, y in zip(pure[0][1], pure[1][1])])))
 
     show(res, pure, steps)
