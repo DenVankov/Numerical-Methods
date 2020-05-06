@@ -106,17 +106,20 @@ def show(ans, exact, h):
     n = len(ans)
     for i in range(n):
         plt.subplot(n, 1, i + 1)
+        plt.subplots_adjust(wspace=0.1, hspace=0.6)
         plt.scatter(ans[i]["Shooting"]["x"], ans[i]["Shooting"]["y"], color='r', alpha=0.4, label='Shooting method')
         plt.plot(ans[i]["Shooting"]["x"], ans[i]["Shooting"]["y"], color='r', alpha=0.4)
         plt.scatter(ans[i]["FD"]["x"], ans[i]["FD"]["y"], color='b', alpha=0.4, label='Finite difference method')
         plt.plot(ans[i]["FD"]["x"], ans[i]["FD"]["y"], color='b', alpha=0.4)
         plt.scatter(exact[i][0], exact[i][1], color='g', alpha=0.4, label='Exact solution')
         plt.plot(exact[i][0], exact[i][1], color='g', alpha=0.4)
+
         plt.legend(loc='best')
         plt.title('h{0} = '.format(i + 1) + str(h[i]))
         plt.xlabel('x')
         plt.ylabel('y')
         plt.grid(True)
+    plt.savefig('ShootAndFD.png')
     plt.show()
 
 
