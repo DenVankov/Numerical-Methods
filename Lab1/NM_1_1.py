@@ -173,11 +173,10 @@ def get_LU(A):
 if __name__ == '__main__':
     print("Input demention of matrix: ")
     n = int(input())
-    A = [[] * n for i in range(0, n)]
+    A = []
 
-    for i in range(0, n):
-        for j in range(0, n):
-            A[i].append(int(input()))
+    for i in range(n):
+        A.append(list(map(float, input().split())))
 
     print("Start:")
     show(A, n)

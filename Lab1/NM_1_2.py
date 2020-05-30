@@ -54,7 +54,7 @@ if __name__ == '__main__':
     n = int(input())
     matrix = []
     for i in range(n):
-        matrix.append(list((input().split())))
+        matrix.append(list(map(float, input().split())))
 
     d = list(map(float, input().split()))
 
