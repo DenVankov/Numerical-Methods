@@ -49,11 +49,11 @@ class ParabolicSolver:
         return u
 
     def calculate(self, a, b, c, d, u, N, k):
-        for j in range(1, N - 1):
+        for j in range(1, N):
             a[j] = self.sigma
             b[j] = -(1 + 2 * self.sigma)
             c[j] = self.sigma
-            d[j] = -u[k - 1][j] - self.tau * self.data.f(j * self.h, k * self.tau)
+            d[j] = -u[k - 1][j]
 
         if self.data.bound_type == 'a1p1':
             a[0] = 0
@@ -162,7 +162,7 @@ def draw(dict_, N, K, T, save_file="plot.png"):
     fig = plt.figure(figsize=plt.figaspect(0.7))
 
     # Make data
-    x = np.arange(0, np.pi, np.pi / N)
+    x = np.arange(0, np.pi / 2, np.pi / 2 / N)
     t = np.arange(0, T, T / K)
     x, t = np.meshgrid(x, t)
     z1 = np.array(dict_['numerical'])
