@@ -24,10 +24,17 @@ class Data:
 
 class ParabolicSolver:
     def __init__(self, params, equation_):
+        self.alpha = 1
+        self.beta = 0
+        self.gamma = 1
+        self.delta = 0
         self.h = 0
         self.tau = 0
         self.sigma = 0
         self.data = Data(params)
+        self.a = 1
+        self.b = 0
+        self.c = 0
         try:
             self.solve_aux = getattr(self, f'{equation_}_solver')
         except:
@@ -48,7 +55,8 @@ class ParabolicSolver:
                 u[i][j] = self.data.solve(j * self.h, i * self.tau)
         return u
 
-    def calculate(self, a, b, c, d, u, N, k):
+    def calculate(self, a, b, c, d, u, k, N, T, K):
+        t = np.arange(0, T, T / K)
         for j in range(1, N):
             a[j] = self.sigma
             b[j] = -(1 + 2 * self.sigma)
@@ -57,13 +65,13 @@ class ParabolicSolver:
 
         if self.data.bound_type == 'a1p1':
             a[0] = 0
-            b[0] = -(1 + 2 * self.sigma)
-            c[0] = self.sigma
-            d[0] = -(u[k - 1][0] + self.sigma * self.data.phi0(k * self.tau))
-            a[-1] = self.sigma
-            b[-1] = -(1 + 2 * self.sigma)
+            b[0] = -(self.alpha / self.h) + self.beta
+            c[0] = self.alpha / self.h
+            d[0] = self.data.phi0(t[k])
+            a[-1] = self.gamma / self.h
+            b[-1] = self.gamma / self.h + self.delta
             c[-1] = 0
-            d[-1] = -(u[k - 1][-1] + self.sigma * self.data.phi1(k * self.tau))
+            d[-1] = self.data.phi1(t[k])
         elif self.data.bound_type == 'a1p2':
             a[0] = 0
             b[0] = -(1 + 2 * self.sigma)
@@ -101,29 +109,52 @@ class ParabolicSolver:
         u[0][-1] = 0
 
         for k in range(1, K):
-            self.calculate(a, b, c, d, u, N, k)
+            self.calculate(a, b, c, d, u, k, N, T, K)
             u[k] = tma(a, b, c, d)
 
         return u
 
     def explicit_solver(self, N, K, T):
         u = np.zeros((K, N))
+        t = np.arange(0, T, T / K)
+        x = np.arange(0, np.pi / 2, np.pi / 2 / N)
         for j in range(1, N - 1):
             u[0][j] = self.data.psi(j * self.h)
 
         for k in range(1, K):
-            u[k][0] = self.data.phi0(k * self.tau)
+            # u[k][0] = self.data.phi0(k * self.tau)
             for j in range(1, N - 1):
-                u[k][j] = self.sigma * u[k - 1][j + 1] + \
-                          (1 - 2 * self.sigma) * u[k - 1][j] + \
-                          self.sigma * u[k - 1][j - 1] + \
-                          self.tau * self.data.f(j * self.h, k * self.tau)
+                # u[k][j] = self.sigma * u[k - 1][j + 1] + \
+                #           (1 - 2 * self.sigma) * u[k - 1][j] + \
+                #           self.sigma * u[k - 1][j - 1] + \
+                #           self.tau * self.data.f(j * self.h, k * self.tau)
+
+                u[k][j] = (u[k - 1][j + 1] * (self.a * self.tau / self.h ** 2.0 + self.b * self.tau / 2.0 / self.h)
+                           + u[k - 1][j] * (-2 * self.a * self.tau / self.h ** 2.0 + self.c * self.tau + 1)
+                           + u[k - 1][j - 1] * (self.a * self.tau / self.h ** 2.0 - self.b * self.tau / 2.0 / self.h)
+                           + self.tau * self.data.f(x[j], t[k]))
 
             if self.data.bound_type == 'a1p1':
-                u[k][-1] = u[k][-2] + self.data.phi1(k * self.tau) * self.h
+                # u[k][-1] = u[k][-2] + self.data.phi1(k * self.tau) * self.h
+                u[k][0] = (self.data.phi0(t[k]) - self.alpha / self.h * u[k][1]) / (self.beta - self.alpha / self.h)
+                u[k][-1] = (self.data.phi1(t[k]) + self.gamma / self.h * u[k][-2]) / (self.delta + self.gamma / self.h)
             elif self.data.bound_type == 'a1p2':
-                # (self.data.phi1(k * self.tau) * 2 * self.h - u[k][-3] + 4 * u[k][-2]) / 3
-                u[k][-1] = self.data.phi1(k * self.tau)
+                # u[k][-1] = self.data.phi1(k * self.tau)
+                u[k][0] = (((2.0 * self.alpha * self.a / self.h / (2.0 * self.a - self.h * self.b)) * u[k][1] +
+                            (self.alpha * self.h / self.tau / (2.0 * self.a - self.h * self.b)) * u[k - 1][0] +
+                            (self.alpha * self.h / (2.0 * self.a - self.h * self.b)) * self.data.f(0, t[k]) -
+                            self.data.phi0(t[k]) /
+                            ((2.0 * self.alpha * self.a / self.h / (2.0 * self.a - self.h * self.b)) + (
+                                    self.alpha * self.h / self.tau / (2.0 * self.a - self.h * self.b)) -
+                             (self.alpha * self.h / (2.0 * self.a - self.h * self.b)) * self.c - self.beta)))
+                u[k][-1] = (((2.0 * self.gamma * self.a / self.h / (2.0 * self.a + self.h * self.b)) * u[k][-2] +
+                             (self.gamma * self.h / self.tau / (2.0 * self.a + self.h * self.b)) * u[k - 1][-1] +
+                             (self.gamma * self.h * self.c / (2.0 * self.a + self.h * self.b)) * self.data.f(
+                            self.data.l, t[k]) + self.data.phi1(t[k])) / (
+                                    (2.0 * self.gamma * self.a / self.h / (2.0 * self.a + self.h * self.b)) + (
+                                    self.gamma * self.h / self.tau / (2.0 * self.a + self.h * self.b)) - (
+                                            self.gamma * self.h * self.c / (
+                                            2.0 * self.a + self.h * self.b)) * self.c + self.delta))
             elif self.data.bound_type == 'a1p3':
                 u[k][-1] = (self.data.phi1(k * self.tau) + u[k][-2] / self.h + 2 * self.tau * u[k - 1][-1] / self.h) / \
                            (1 / self.h + 2 * self.tau / self.h)
@@ -141,7 +172,7 @@ class ParabolicSolver:
             u[0][i] = self.data.psi(i * self.h)
 
         for k in range(1, K):
-            self.calculate(a, b, c, d, u, N, k)
+            self.calculate(a, b, c, d, u, k, N, T, K)
 
             tmp_imp = tma(a, b, c, d)
 
@@ -199,7 +230,7 @@ def compare_error(dict_):
     return error
 
 
-data = {'equation_type': 'explicit', 'N': 15, 'K': 500, 'T': 1}
+data = {'equation_type': 'implicit', 'N': 25, 'K': 100, 'T': 1}
 
 if __name__ == '__main__':
     equation_type = data['equation_type']
@@ -209,10 +240,10 @@ if __name__ == '__main__':
         'l': np.pi,
         'psi': lambda x: np.sin(x),
         'f': lambda x, t: 0.5 * np.exp(-0.5 * t) * np.cos(x),
-        'phi0': lambda t: -np.exp(-0.5 * t),  # Wrong graphic if "+"
+        'phi0': lambda t: np.exp(-0.5 * t),
         'phi1': lambda t: -np.exp(-0.5 * t),
         'solution': lambda x, t: np.exp(-0.5 * t) * np.sin(x),
-        'bound_type': 'a1p2',
+        'bound_type': 'a1p1',
     }
 
     var7 = ParabolicSolver(params, equation_type)
@@ -234,8 +265,7 @@ if __name__ == '__main__':
         avg_err /= N
 
     print(error[0])
-    print(error[int(K/2)])
+    print(error[int(K / 2)])
     print(error[-1])
     print(f'Average error in each N: {avg_err}')
     print(f'Average error\t\t   : {avg_err / K}')
-
