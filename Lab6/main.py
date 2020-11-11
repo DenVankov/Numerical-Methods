@@ -210,8 +210,9 @@ def draw(dict_, N, K, T, save_file="plot.png"):
     ax.set_xlabel('x', fontsize=20)
     ax.set_ylabel('t', fontsize=20)
     ax.set_zlabel('u', fontsize=20)
-    ax.plot_surface(x, t, z1, cmap=cm.coolwarm,
+    surf = ax.plot_surface(x, t, z1, cmap=cm.coolwarm,
                     linewidth=0, antialiased=True)
+    fig.colorbar(surf, shrink=0.5, aspect=15)
 
     ax = fig.add_subplot(1, 2, 2, projection='3d')
     ax.set_xlabel('x', fontsize=20)
@@ -258,7 +259,7 @@ if __name__ == '__main__':
         'psi1_dir2': lambda x: 2 * np.exp(-x) * np.sin(x),
         'phi0': lambda t: np.exp(-t) * np.cos(2 * t),
         'phi1': lambda t: 0,
-        'bound_type': 'a1p2',
+        'bound_type': 'a2p3',
         'approximation': 'p1',
         'solution': lambda x, t: np.exp(-t - x) * np.cos(x) * np.cos(2 * t),
     }
